@@ -2,7 +2,7 @@ use reqwest::header;
 use std::net::TcpListener;
 
 // Spin up a server instance, binding a random port (leveraging port `0` behavior) and return the
-// `address`, including port, as a string in the form of `http://{address}`
+// `address`, including port, as a string in the form of `http://{address}`.
 fn spawn_app() -> String {
     let listener =
         TcpListener::bind("127.0.0.1:0").expect("listener should be able to bind a random port");
@@ -17,7 +17,7 @@ fn spawn_app() -> String {
 
 #[tokio::test]
 // Ensure that the server is actually running, and the /health_check endpoint returns a 200 OK
-// with an empty body
+// with an empty body.
 async fn health_check_works() {
     // Arrange
     let address = spawn_app();
@@ -37,6 +37,7 @@ async fn health_check_works() {
 }
 
 #[tokio::test]
+// Ensure that sending valid form data to the /subscribe endpoint returns a 200 OK.
 async fn subscribe_returns_a_200_for_valid_form_data() {
     let address = spawn_app();
     let client = reqwest::Client::new();
@@ -54,6 +55,8 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
 }
 
 #[tokio::test]
+// Ensure that various forms of missing data sent to /subscribe result in a 400 Bad Request
+// response.
 async fn subscribe_returns_a_400_for_missing_form_data() {
     let address = spawn_app();
     let client = reqwest::Client::new();
