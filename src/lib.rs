@@ -2,10 +2,15 @@ use actix_web::dev::Server;
 use actix_web::{web, App, HttpResponse, HttpServer};
 use std::net::TcpListener;
 
+// Basic health check endpoint to verify the server is alive.
+// Always returns a 200 OK with en empty body.
 async fn health_check() -> HttpResponse {
     HttpResponse::Ok().finish()
 }
 
+// Subscription POST endpoint, which should handle new subscriptoin requests, and returning a 200
+// OK when valid form data, in the form of name=name&email=email is given, and a 400 Bad Requst
+// otherwise.
 async fn subscribe() -> HttpResponse {
     HttpResponse::Ok().finish()
 }
