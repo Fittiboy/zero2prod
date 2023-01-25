@@ -20,18 +20,7 @@ struct SubscribeForm {
 // OK when valid form data, in the form of name=name&email=email is given, and a 400 Bad Requst
 // otherwise.
 async fn subscribe(form: web::Form<SubscribeForm>) -> HttpResponse {
-    let mut status = StatusCode::OK;
-    let mut body = String::new();
-    if form.name.is_empty() {
-        status = StatusCode::BAD_REQUEST;
-        body += "name parameter cannot be empty\n";
-    };
-    if form.email.is_empty() {
-        status = StatusCode::BAD_REQUEST;
-        body += "email parameter cannot be empty";
-    }
-
-    HttpResponseBuilder::new(status).body(body)
+    HttpResponse::Ok().finish()
 }
 
 // Takes a `TcpListener` as input and starts our server on the address the `listener` is bound to.
