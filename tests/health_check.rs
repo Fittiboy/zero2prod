@@ -1,6 +1,23 @@
+use reqwest::header;
 use std::net::TcpListener;
 
+// Spin up a server instance, binding a random port (leveraging port `0` behavior) and return the
+// `address`, including port, as a string in the form of `http://{address}`
+fn spawn_app() -> String {
+    let listener =
+        TcpListener::bind("127.0.0.1:0").expect("listener should be able to bind a random port");
+    let address = listener
+        .local_addr()
+        .expect("listener should always have an address");
+    let server = zero2prod::run(listener)
+        .expect("`run` should be able to bind the random address given by the OS");
+    let _ = tokio::spawn(server);
+    format!("http://{address}")
+}
+
 #[tokio::test]
+// Ensure that the server is actually running, and the /health_check endpoint returns a 200 OK
+// with an empty body
 async fn health_check_works() {
     // Arrange
     let address = spawn_app();
@@ -19,14 +36,47 @@ async fn health_check_works() {
     assert_eq!(Some(0), response.content_length());
 }
 
-fn spawn_app() -> String {
-    let listener =
-        TcpListener::bind("127.0.0.1:0").expect("listener should be able to bind a random port");
-    let address = listener
-        .local_addr()
-        .expect("listener should always have an address");
-    let server = zero2prod::run(listener)
-        .expect("`run` should be able to bind the random address given by the OS");
-    let _ = tokio::spawn(server);
-    format!("http://{address}")
+#[tokio::test]
+async fn subscribe_returns_a_200_for_valid_form_data() {
+    let address = spawn_app();
+    let client = reqwest::Client::new();
+
+    let body = "name=Fitti&email=dev%40fitti.io";
+    let response = client
+        .post(&format!("{}/subscribe", address))
+        .header(header::CONTENT_TYPE, "x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await
+        .expect("subscribe request should always be possible to send");
+
+    assert_eq!(200, response.status().as_u16());
+}
+
+#[tokio::test]
+async fn subscribe_returns_a_400_for_missing_form_data() {
+    let address = spawn_app();
+    let client = reqwest::Client::new();
+    let test_cases = vec![
+        ("name=Fitti", "missing the email"),
+        ("email=dev%40fitti.io", "missing the name"),
+        ("", "missing both name and email"),
+    ];
+
+    for (invalid_body, error_message) in test_cases {
+        let response = client
+            .post(&format!("{}/subscribe", address))
+            .header(header::CONTENT_TYPE, "x-www-form-urlencoded")
+            .body(invalid_body)
+            .send()
+            .await
+            .expect("subscribe request should always be possible to send");
+
+        assert_eq!(
+            400,
+            response.status().as_u16(),
+            "The API did not fail with 400 Bad Request when the form data was {}.",
+            error_message
+        );
+    }
 }
