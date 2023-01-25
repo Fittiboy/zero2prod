@@ -15,6 +15,8 @@ async fn subscribe() -> HttpResponse {
     HttpResponse::Ok().finish()
 }
 
+// Takes a `TcpListener` as input and starts our server on the address the `listener` is bound to.
+// Then returns the server in a Result<Server>.
 pub fn run(listener: TcpListener) -> std::io::Result<Server> {
     let server = HttpServer::new(|| {
         App::new()
