@@ -45,7 +45,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
     let body = "name=Fitti&email=dev%40fitti.io";
     let response = client
         .post(&format!("{}/subscribe", address))
-        .header(header::CONTENT_TYPE, "x-www-form-urlencoded")
+        .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
         .body(body)
         .send()
         .await
@@ -69,7 +69,7 @@ async fn subscribe_returns_a_400_for_missing_form_data() {
     for (invalid_body, error_message) in test_cases {
         let response = client
             .post(&format!("{}/subscribe", address))
-            .header(header::CONTENT_TYPE, "x-www-form-urlencoded")
+            .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
             .body(invalid_body)
             .send()
             .await
