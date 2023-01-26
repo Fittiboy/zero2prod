@@ -1,5 +1,7 @@
 use reqwest::header;
+use sqlx::{Connection, PgConnection};
 use std::net::TcpListener;
+use zero2prod::configuration::get_configuration;
 
 // Spin up a server instance, binding a random port (leveraging port `0` behavior) and return the
 // `address`, including port, as a string in the form of `http://{address}`.
@@ -39,19 +41,35 @@ async fn health_check_works() {
 #[tokio::test]
 // Ensure that sending valid form data to the /subscribe endpoint returns a 200 OK.
 async fn subscribe_returns_a_200_for_valid_form_data() {
-    let address = spawn_app();
+    // Arrange
+    let app_address = spawn_app();
+    let configuration = get_configuration().expect("failed to read configuration");
+    let connection_string = configuration.database.connection_string();
+    let mut connection = PgConnection::connect(&connection_string)
+        .await
+        .expect("failed to connect to Postgres");
     let client = reqwest::Client::new();
 
+    // Act
     let body = "name=Fitti&email=dev%40fitti.io";
     let response = client
-        .post(&format!("{}/subscribe", address))
+        .post(&format!("{}/subscribe", app_address))
         .header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
         .body(body)
         .send()
         .await
         .expect("subscribe request should always be possible to send");
 
+    // Assert
     assert_eq!(200, response.status().as_u16());
+
+    let saved = sqlx::query!("SELECT email, name FROM subscriptions",)
+        .fetch_one(&mut connection)
+        .await
+        .expect("failed to fetch saved subscription");
+
+    assert_eq!(saved.email, "dev@fitti.io");
+    assert_eq!(saved.name, "Fitti");
 }
 
 #[tokio::test]
