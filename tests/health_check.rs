@@ -9,7 +9,7 @@ fn spawn_app() -> String {
     let address = listener
         .local_addr()
         .expect("listener should always have an address");
-    let server = zero2prod::run(listener)
+    let server = zero2prod::startup::run(listener)
         .expect("`run` should be able to bind the random address given by the OS");
     let _ = tokio::spawn(server);
     format!("http://{address}")

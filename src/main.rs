@@ -1,5 +1,5 @@
 use std::net::TcpListener;
-use zero2prod::run;
+use zero2prod::startup::run;
 
 #[tokio::main]
 // Binds to localhost on port 8000 and runs our server on that address.
