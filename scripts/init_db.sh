@@ -20,3 +20,14 @@ docker run \
     -d postgres \
     postgres -N 1000
     # ^ Increased maximum number of connections for test purposes
+
+# Keep pinging Postgres until it's read to accept commands
+export PGPASSWORD="${DB_PASSWORD}"
+until psql -h "localhost" -U "${DB_USER}" -p "${DB_PORT}" -d "postgres" -c '\q' ; do
+    >&2 echo "Postgres is still unavailable - sleeping"
+    sleep 1
+done
+
+DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT}/${DB_NAME}
+export DATABASE_URL
+sqlx database create
