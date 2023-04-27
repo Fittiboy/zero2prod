@@ -13,7 +13,7 @@ pub struct DatabaseSettings {
     pub database_name: String,
 }
 
-pub fn get_configuration() -> Result<Settings, config::ConfigError> {
+pub fn get() -> Result<Settings, config::ConfigError> {
     let settings = config::Config::builder()
         .add_source(config::File::new(
             "configuration.yaml",
@@ -24,6 +24,7 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
 }
 
 impl DatabaseSettings {
+    #[must_use = "The connection string should be used to connect to a database"]
     pub fn connection_string(&self) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",

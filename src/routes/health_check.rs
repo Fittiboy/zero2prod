@@ -1,7 +1,7 @@
 use actix_web::HttpResponse;
 
-// Basic health check endpoint to verify the server is alive.
-// Always returns a 200 OK with en empty body.
+//TODO: Determine if this has to be async
+#[allow(clippy::unused_async)]
 pub async fn health_check() -> HttpResponse {
     HttpResponse::Ok().finish()
 }
